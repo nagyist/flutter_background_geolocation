@@ -21,13 +21,7 @@ class MainMenuButton extends StatefulWidget {
 class MainMenuButtonState extends State<MainMenuButton> {
   late BuildContext _context;
 
-  void _onClickMenu() async {
-
-  }
-
   void _onClickSettings() {
-
-
     bg.BackgroundGeolocation.playSound(util.Dialog.getSoundId("OPEN"));
     Navigator.of(_context).push(MaterialPageRoute<Null>(
         fullscreenDialog: true,
@@ -36,10 +30,17 @@ class MainMenuButtonState extends State<MainMenuButton> {
         }));
   }
 
-  void _onClickResetOdometer() {
-    bg.BackgroundGeolocation.setOdometer(0.0).catchError((error) {
-      print('********** [resetOdometer] ERROR: $error');
-    });
+  void _onClickResetOdometer() async {
+    try {
+      await bg.BackgroundGeolocation.setOdometer(0.0);
+      await bg.BackgroundGeolocation.getCurrentPosition(
+        persist: false,
+        samples: 1,
+        maximumAge: 30000
+      );
+    } catch (error) {
+      print('[resetOdometer] ERROR: $error');
+    }
   }
 
   void _onClickEmailLog() async {
