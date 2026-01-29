@@ -1,5 +1,50 @@
 part of '../flutter_background_geolocation.dart';
 
+// -----------------------------------------------------------------------------
+// Shared parsing helpers
+// -----------------------------------------------------------------------------
+Map _asMap(dynamic v) => (v is Map) ? v : const {};
+
+num _parseNum(dynamic v, {num fallback = 0}) {
+  if (v is num) return v;
+  if (v is String) {
+    final p = num.tryParse(v);
+    if (p != null) return p;
+  }
+  return fallback;
+}
+
+double _parseDouble(dynamic v, {double fallback = 0.0}) {
+  final n = _parseNum(v, fallback: fallback);
+  return (n is num) ? n.toDouble() : fallback;
+}
+
+int? _parseInt(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  if (v is String) return int.tryParse(v);
+  return null;
+}
+
+bool _parseBool(dynamic v, {bool fallback = false}) {
+  if (v is bool) return v;
+  if (v is num) return v != 0;
+  if (v is String) {
+    final s = v.toLowerCase();
+    if (s == 'true' || s == '1' || s == 'yes') return true;
+    if (s == 'false' || s == '0' || s == 'no') return false;
+  }
+  return fallback;
+}
+
+// Convenience wrappers for reading from a map.
+double _mapDouble(Map c, String key, {double fallback = 0.0}) =>
+    _parseDouble(c[key], fallback: fallback);
+int? _mapInt(Map c, String key) => _parseInt(c[key]);
+bool _mapBool(Map c, String key, {bool fallback = false}) =>
+    _parseBool(c[key], fallback: fallback);
+
 /// Location coordinates (eg: `latitude`, `longitude`, `accuracy`, `speed`, `heading`, etc.
 ///
 /// ```dart
@@ -81,35 +126,32 @@ class Coords {
   late double altitudeAccuracy;
 
   Coords(dynamic coords) {
-    /// Should we replace all below with this format?
-    //this.latitude = (coords['latitude'] as num).toDouble();
-    //this.longitude = (coords['longitude'] as num).toDouble();
-    /// /////////////////////////////////////////////////////////
+    // Coords should parse "real" locations normally, but must tolerate synthetic/dummy
+    // payloads (eg when SDK is disabled or permissions/services are unavailable).
+    final Map c = _asMap(coords);
 
-    latitude = (coords['latitude'] as num).toDouble();
-    longitude = (coords['longitude'] as num).toDouble();
-    accuracy = (coords['accuracy'] as num).toDouble();
-    altitude = (coords['altitude'] as num).toDouble();
-    ellipsoidalAltitude = (coords['ellipsoidal_altitude'] as num).toDouble();
-    heading = (coords['heading'] as num).toDouble();
-    if (coords['heading_accuracy'] != null) {
-      headingAccuracy = (coords['heading_accuracy'] as num).toDouble();
-    }
-    speed = (coords['speed'] as num).toDouble();
-    if (coords['speed_accuracy'] != null) {
-      speedAccuracy = (coords['speed_accuracy'] as num).toDouble();
-    }
-    if (coords['altitude_accuracy'] != null) {
-      altitudeAccuracy = (coords['altitude_accuracy'] as num).toDouble();
-    }
-    this.speed = coords['speed'] * 1.0;
-    if (coords['speed_accuracy'] != null) {
-      this.speedAccuracy = coords['speed_accuracy'] * 1.0;
-    }
-    if (coords['altitude_accuracy'] != null) {
-      this.altitudeAccuracy = coords['altitude_accuracy'] * 1.0;
-    }
-    this.floor = coords['floor'];
+    // Required fields (real locations always provide these).  For dummy payloads, default to 0.
+    latitude = _mapDouble(c, 'latitude', fallback: 0.0);
+    longitude = _mapDouble(c, 'longitude', fallback: 0.0);
+    accuracy = _mapDouble(c, 'accuracy', fallback: 0.0);
+    altitude = _mapDouble(c, 'altitude', fallback: 0.0);
+
+    // Optional / platform-dependent fields.
+    // iOS dummy payload can omit ellipsoidal_altitude; fall back to altitude.
+    ellipsoidalAltitude =
+        _mapDouble(c, 'ellipsoidal_altitude', fallback: altitude);
+
+    // GPS-only fields can be missing.  Use -1 when absent.
+    heading = _mapDouble(c, 'heading', fallback: -1.0);
+    headingAccuracy = _mapDouble(c, 'heading_accuracy', fallback: -1.0);
+    speed = _mapDouble(c, 'speed', fallback: -1.0);
+    speedAccuracy = _mapDouble(c, 'speed_accuracy', fallback: -1.0);
+
+    // May be absent on some devices.
+    altitudeAccuracy = _mapDouble(c, 'altitude_accuracy', fallback: -1.0);
+
+    // iOS-only.
+    floor = _mapInt(c, 'floor');
   }
   String toString() {
     return 'coords: $latitude,$longitude, acy: $accuracy, spd: $speed';
@@ -135,8 +177,10 @@ class Battery {
   late double level;
 
   Battery(dynamic battery) {
-    this.isCharging = battery['is_charging'];
-    this.level = battery['level'] * 1.0;
+    final Map b = _asMap(battery);
+    // Dummy payloads (or older native versions) may omit battery fields.
+    isCharging = _mapBool(b, 'is_charging', fallback: false);
+    level = _mapDouble(b, 'level', fallback: -1.0);
   }
 }
 
@@ -169,8 +213,14 @@ class Activity {
   late int confidence;
 
   Activity(dynamic activity) {
-    this.type = activity['type'];
-    this.confidence = activity['confidence'];
+    final Map a = _asMap(activity);
+
+    // Synthetic/dummy locations (eg when SDK disabled / no permission) may omit `activity`.
+    // Real locations should provide these fields.
+    final dynamic t = a['type'];
+    type = (t is String && t.isNotEmpty) ? t : 'unknown';
+
+    confidence = _parseInt(a['confidence']) ?? 0;
   }
 }
 
@@ -313,28 +363,50 @@ class Location {
   Map? extras;
 
   Location(dynamic params) {
-    this.map = params;
-    this.coords = new Coords(params['coords']);
-    this.battery = new Battery(params['battery']);
-    this.activity = new Activity(params['activity']);
+    final Map p = _asMap(params);
 
-    this.timestamp = params['timestamp'];
-    this.recordedAt = params['recorded_at'];
-    this.age = (params['age'] as num).toDouble();
-    this.isMoving = params['is_moving'];
-    this.uuid = params['uuid'];
-    this.odometer = (params['odometer'] as num).toDouble();
+    map = params;
 
-    this.sample = (params['sample'] != null) ? params['sample'] : false;
-    this.event = (params['event'] != null) ? params['event'] : '';
+    // Always present in both real + dummy payloads.
+    coords = Coords(p['coords']);
 
-    if (params['geofence'] != null) {
-      this.geofence = new GeofenceEvent(params['geofence']);
+    // Optional objects can be missing in dummy payloads.
+    battery = Battery(p['battery']);
+    activity = Activity(p['activity']);
+
+    // timestamp is required for a valid Location.  Dummy payload provides it.
+    final dynamic ts = p['timestamp'];
+    timestamp = (ts is String) ? ts : (ts?.toString() ?? '');
+
+    // recorded_at may be absent in dummy payloads.
+    final dynamic ra = p['recorded_at'];
+    recordedAt = (ra is String) ? ra : timestamp;
+
+    // age may be absent.
+    age = _mapDouble(p, 'age', fallback: 0.0);
+
+    // is_moving may be bool or 0/1.
+    isMoving = _mapBool(p, 'is_moving', fallback: false);
+
+    // uuid may be absent in dummy payloads.
+    final dynamic u = p['uuid'];
+    uuid = (u is String) ? u : (u?.toString() ?? '');
+
+    odometer = _mapDouble(p, 'odometer', fallback: 0.0);
+
+    sample = _mapBool(p, 'sample', fallback: false);
+
+    final dynamic e = p['event'];
+    event = (e is String) ? e : (e?.toString() ?? '');
+
+    if (p['geofence'] != null) {
+      geofence = GeofenceEvent(p['geofence']);
     }
-    this.mock = (params['mock'] != null) ? params['mock'] : false;
 
-    if (params['extras'] != null) {
-      this.extras = params['extras'];
+    mock = _mapBool(p, 'mock', fallback: false);
+
+    if (p['extras'] != null && p['extras'] is Map) {
+      extras = Map.from(p['extras']);
     }
   }
 
