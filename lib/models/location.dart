@@ -16,7 +16,7 @@ num _parseNum(dynamic v, {num fallback = 0}) {
 
 double _parseDouble(dynamic v, {double fallback = 0.0}) {
   final n = _parseNum(v, fallback: fallback);
-  return (n is num) ? n.toDouble() : fallback;
+  return n.toDouble();
 }
 
 int? _parseInt(dynamic v) {
