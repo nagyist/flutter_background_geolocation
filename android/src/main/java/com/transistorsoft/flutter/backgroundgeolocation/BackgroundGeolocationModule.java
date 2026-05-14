@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
@@ -95,6 +96,8 @@ public class BackgroundGeolocationModule  implements MethodChannel.MethodCallHan
     private final List<BinaryMessenger> mMessengers = new ArrayList<>();
     private Context mContext;
     private Activity mActivity;
+    private WatchPositionStreamHandler mWatchPositionStreamHandler;
+    private final AtomicInteger mWatchIdCounter = new AtomicInteger(0);
 
     void onAttachedToEngine(Context context, final BinaryMessenger messenger) {
         mContext = context;
@@ -191,6 +194,9 @@ public class BackgroundGeolocationModule  implements MethodChannel.MethodCallHan
         streamHandlers.add(new PowerSaveChangeStreamHandler().register(mContext, messenger));
         streamHandlers.add(new NotificationActionStreamHandler().register(mContext, messenger));
         streamHandlers.add(new AuthorizationStreamHandler().register(mContext, messenger));
+
+        mWatchPositionStreamHandler = new WatchPositionStreamHandler();
+        streamHandlers.add(mWatchPositionStreamHandler.register(mContext, messenger));
 
         synchronized (mStreamHandlers) {
             mStreamHandlers.put(messenger, streamHandlers);
@@ -521,32 +527,36 @@ public class BackgroundGeolocationModule  implements MethodChannel.MethodCallHan
     private void watchPosition(@NonNull Map<String, Object> options, final MethodChannel.Result result) {
         TSWatchPositionRequest.Builder builder = new TSWatchPositionRequest.Builder(mContext);
 
+        final int watchId = mWatchIdCounter.incrementAndGet();
+
         builder.setCallback(new TSLocationCallback() {
             @Override public void onLocation(LocationEvent event) {
-                result.success(event.toMap());
+                mWatchPositionStreamHandler.emit(watchId, event);
             }
             @Override public void onError(Integer error) {
-                result.error(error.toString(), null, null);
+                // TODO
             }
         });
 
         if (options.containsKey("interval")) {
-            builder.setInterval((long) options.get("interval"));
+            builder.setInterval(((Number) options.get("interval")).longValue());
         }
         if (options.containsKey("persist")) {
             builder.setPersist((boolean) options.get("persist"));
         }
         if (options.containsKey("desiredAccuracy")) {
-            builder.setDesiredAccuracy((double) options.get("desiredAccuracy"));
+            builder.setDesiredAccuracy(((Number) options.get("desiredAccuracy")).doubleValue());
         }
         if (options.containsKey("extras")) {
             try {
                 builder.setExtras(mapToJson((Map) options.get("extras")));
             } catch (JSONException e) {
                 result.error(e.getMessage(), null, null);
+                return;
             }
         }
         BackgroundGeolocation.getInstance(mContext).watchPosition(builder.build());
+        result.success(watchId);
     }
 
     private void stopWatchPosition(final MethodChannel.Result result) {

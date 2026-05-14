@@ -20,6 +20,7 @@ class MainMenuButton extends StatefulWidget {
 
 class MainMenuButtonState extends State<MainMenuButton> {
   late BuildContext _context;
+  bg.Subscription? _watchPositionSubscription;
 
   void _onClickSettings() async {
     bg.BackgroundGeolocation.playSound(util.Dialog.getSoundId("OPEN"));
@@ -53,6 +54,27 @@ class MainMenuButtonState extends State<MainMenuButton> {
 
   void _onClickDestroyLocations() async {
     actions.Actions.destroyLocations(_context);
+  }
+
+  void _onClickWatchPosition() async {
+    if (_watchPositionSubscription != null) {
+      await _watchPositionSubscription!.remove();
+      setState(() {
+        _watchPositionSubscription = null;
+      });
+      print('[watchPosition] OFF');
+      return;
+    }
+    _watchPositionSubscription = await bg.BackgroundGeolocation.watchPosition(
+      interval: 1000,
+      persist: true,
+      desiredAccuracy: 0,
+      onLocation: (bg.Location location) {
+        print('[watchPosition] - $location');
+      },
+    );
+    setState(() {});
+    print('[watchPosition] ON');
   }
 
   void _onClickRequestPermission() async {
@@ -160,7 +182,12 @@ class MainMenuButtonState extends State<MainMenuButton> {
           child: Icon(Icons.lock_open),
           onTap: _onClickRequestPermission),
       SpeedDialChild(
-        //hasLabel: true,
+          label: _watchPositionSubscription != null ? "Stop watch position" : "Watch position",
+          backgroundColor: _watchPositionSubscription != null ? Colors.red : bgColor,
+          foregroundColor: _watchPositionSubscription != null ? Colors.white : Colors.black,
+          child: Icon(_watchPositionSubscription != null ? Icons.stop : Icons.navigation),
+          onTap: _onClickWatchPosition),
+      SpeedDialChild(
           label: "Destroy locations",
           backgroundColor: bgColor,
           foregroundColor: Colors.black,

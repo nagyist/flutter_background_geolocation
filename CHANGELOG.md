@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 5.2.0 &mdash; 2026-05-14
+* [Fixed][Android] `watchPosition` crashes — `Integer`→`Long` / `Integer`→`Double` ClassCastException from Flutter MethodChannel type mapping, and incorrect `Map` response shape where Dart expected an `int` watchId.
+* [Fixed][Android] `watchPosition` `@UiThread` RuntimeException — `EventSink.success()` called from background thread pool; now posted to main thread via `Handler(Looper.getMainLooper())`.
+* [Added] New `Subscription` class — `watchPosition` and all `on*` event-listener methods now return a `Subscription` instance with a `.remove()` method for convenient listener teardown.
+* [Changed] Example app — added "Watch position" toggle to SpeedDial FAB menu.
+
 ## 5.1.2 &mdash; 2026-04-20
 * [Fixed][Android] App stuck on splash / logo after relaunch when the foreground service kept the process alive past Activity termination. Root cause: `HeadlessTask`'s static background `FlutterEngine` was never destroyed, so on main Activity reattach the stale engine conflicted with the freshly attaching main engine's plugin channels. `HeadlessTask.destroyBackgroundIsolate()` now runs when `BackgroundGeolocationModule.setActivity(activity)` receives a non-null Activity, clearing the background engine before the main engine attaches.
 * [Changed] Example `main.dart` — added boot-trace `print()` milestones to make stuck-splash reproductions immediately identify the Dart boot stage that hangs.

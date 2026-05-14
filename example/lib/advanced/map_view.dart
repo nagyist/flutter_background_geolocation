@@ -75,6 +75,7 @@ class MapViewState extends State<MapView> with AutomaticKeepAliveClientMixin<Map
 
     bg.BackgroundGeolocation.onLocation(_onLocation);
     bg.BackgroundGeolocation.onMotionChange(_onMotionChange);
+
     bg.BackgroundGeolocation.onGeofence(_onGeofence);
     bg.BackgroundGeolocation.onGeofencesChange(_onGeofencesChange);
     bg.BackgroundGeolocation.onEnabledChange(_onEnabledChange);

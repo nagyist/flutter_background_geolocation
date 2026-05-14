@@ -36,8 +36,6 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
   bool? _enabled;
   String? _motionActivity;
   String? _odometer;
-  int? _watchPositionId;
-  int? _watchPositionId2;
 
   DateTime? _lastRequestedTemporaryFullAccuracy;
 
@@ -336,37 +334,19 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
   // Manually fetch the current position.
   void _onClickGetCurrentPosition() async {
     bg.BackgroundGeolocation.playSound(util.Dialog.getSoundId("BUTTON_CLICK"));
-    /*
-    if (_watchPositionId != null) {
-      print("**** stopWatchPosition: $_watchPositionId");
-      await bg.BackgroundGeolocation.stopWatchPosition(_watchPositionId!);
-      await bg.BackgroundGeolocation.stopWatchPosition(_watchPositionId2!);
-      _watchPositionId = null;
-    } else {
-      _watchPositionId = await bg.BackgroundGeolocation.watchPosition(interval: 1000, extras: {"***ID***": 1}, onLocation: (location) {
-        print("*** [watchPosition] ONE: $location");
-      });
-
-      _watchPositionId2 = await bg.BackgroundGeolocation.watchPosition(interval: 1000, extras: {"***ID***": 2}, onLocation: (location) {
-        print("*** [watchPosition] TWO: $location");
-      });
-
-    }
-     */
 
     bg.BackgroundGeolocation.getCurrentPosition(
-        persist: true,       // <-- do not persist this location
-        desiredAccuracy: 10, // <-- desire an accuracy of 40 meters or less
-        maximumAge: 5000,       // <-- Up to 10s old is fine.
-        timeout: 30,         // <-- wait 30s before giving up.
-        samples: 3,           // <-- sample just 1 location
+        persist: true,
+        desiredAccuracy: 10,
+        maximumAge: 5000,
+        timeout: 30,
+        samples: 3,
         extras: {"getCurrentPosition": true}
     ).then((bg.Location location) async {
       print('[getCurrentPosition] - $location');
     }).catchError((error) {
       print('[getCurrentPosition] ERROR: $error');
     });
-
   }
 
   // Go back to HomeApp

@@ -57,6 +57,7 @@ part 'models/transistor_authorization_token.dart';
 part 'models/authorization_event.dart';
 part 'models/permission_rationale.dart';
 part 'models/error.dart';
+part 'models/subscription.dart';
 
 const _PLUGIN_PATH = "com.transistorsoft/flutter_background_geolocation";
 

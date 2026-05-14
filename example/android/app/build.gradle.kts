@@ -20,6 +20,7 @@ if (keystorePropertiesFile.exists()) {
 } else if (machineKeystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(machineKeystorePropertiesFile))
 }
+val hasReleaseKey = keystoreProperties.containsKey("storeFile")
 
 val backgroundGeolocation = project(":flutter_background_geolocation")
 apply { from("${backgroundGeolocation.projectDir}/background_geolocation.gradle") }
@@ -50,7 +51,7 @@ android {
     }
 
     signingConfigs {
-        if (keystorePropertiesFile.exists()) {
+        if (hasReleaseKey) {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
@@ -65,7 +66,7 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             isMinifyEnabled = true
-            signingConfig = if (keystorePropertiesFile.exists()) {
+            signingConfig = if (hasReleaseKey) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
