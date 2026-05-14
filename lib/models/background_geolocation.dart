@@ -1157,7 +1157,9 @@ class BackgroundGeolocation {
           .map((dynamic event) => Location(event));
     }
     _registerSubscription(_eventsMotionChange!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to location events
@@ -1201,7 +1203,9 @@ class BackgroundGeolocation {
           }
         }),
         success);
-    return Subscription._(() async { removeListener(success); });
+    return Subscription._(() async {
+      removeListener(success);
+    });
   }
 
   static void _onLocationError(LocationError error) {
@@ -1230,7 +1234,9 @@ class BackgroundGeolocation {
       });
     }
     _registerSubscription(_eventsActivityChange!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to Geofence transition events.
@@ -1250,7 +1256,9 @@ class BackgroundGeolocation {
           .map((dynamic event) => GeofenceEvent(event));
     }
     _registerSubscription(_eventsGeofence!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to changes in actively monitored geofences.
@@ -1288,7 +1296,8 @@ class BackgroundGeolocation {
   ///
   /// When **all** geofences have been removed, the [GeofencesChangeEvent] will provide empty lists for both [GeofencesChangeEvent.on] & [GeofencesChangeEvent.off].
   ///
-  static Subscription onGeofencesChange(Function(GeofencesChangeEvent) callback) {
+  static Subscription onGeofencesChange(
+      Function(GeofencesChangeEvent) callback) {
     if (_eventsGeofencesChange == null) {
       _eventsGeofencesChange = _eventChannelGeofencesChange
           .receiveBroadcastStream()
@@ -1296,7 +1305,9 @@ class BackgroundGeolocation {
               GeofencesChangeEvent(event['on'], event['off']));
     }
     _registerSubscription(_eventsGeofencesChange!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to periodic heartbeat events.
@@ -1333,7 +1344,9 @@ class BackgroundGeolocation {
           .map((dynamic event) => HeartbeatEvent(event));
     }
     _registerSubscription(_eventsHeartbeat!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to HTTP events.
@@ -1356,7 +1369,9 @@ class BackgroundGeolocation {
           .map((dynamic event) => HttpEvent(event));
     }
     _registerSubscription(_eventsHttp!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to [AppConfig.schedule] events.
@@ -1382,7 +1397,9 @@ class BackgroundGeolocation {
           .map((dynamic event) => State(event));
     }
     _registerSubscription(_eventsSchedule!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to changes in device's location-services configuration / authorization.
@@ -1440,7 +1457,9 @@ class BackgroundGeolocation {
       });
     }
     _registerSubscription(_eventsProviderChange!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to changes in network connectivity.
@@ -1454,7 +1473,8 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static Subscription onConnectivityChange(Function(ConnectivityChangeEvent) callback) {
+  static Subscription onConnectivityChange(
+      Function(ConnectivityChangeEvent) callback) {
     if (_eventsConnectivityChange == null) {
       _eventsConnectivityChange = _eventChannelConnectivityChange
           .receiveBroadcastStream()
@@ -1464,7 +1484,9 @@ class BackgroundGeolocation {
     }
     _registerSubscription(
         _eventsConnectivityChange!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to changes in plugin [State.enabled].
@@ -1486,7 +1508,9 @@ class BackgroundGeolocation {
           .map((dynamic enabled) => enabled as bool);
     }
     _registerSubscription(_eventsEnabledChange!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Subscribe to state changes in OS power-saving system.
@@ -1522,7 +1546,9 @@ class BackgroundGeolocation {
           .map((dynamic isPowerSaveMode) => isPowerSaveMode as bool);
     }
     _registerSubscription(_eventsPowerSaveChange!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Listen to [Authorization] events from [Authorization.refreshUrl].
@@ -1549,7 +1575,9 @@ class BackgroundGeolocation {
           .map((dynamic event) => AuthorizationEvent(event));
     }
     _registerSubscription(_eventsAuthorization!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// __(Android only)__ Registers a button-click listener on a [Custom Notification Layout](https://github.com/transistorsoft/flutter_background_geolocation/wiki/Android-Custom-Notification-Layout)
@@ -1591,7 +1619,9 @@ class BackgroundGeolocation {
     }
     _registerSubscription(
         _eventsNotificationAction!.listen(callback), callback);
-    return Subscription._(() async { removeListener(callback); });
+    return Subscription._(() async {
+      removeListener(callback);
+    });
   }
 
   /// Registers a function to receive events from __`BackgroundGeolocation`__ while in the *terminated* ("Headless") state.
@@ -1772,7 +1802,9 @@ class BackgroundGeolocation {
       _isWatchPositionStreamInitialized = true;
     }
 
-    return Subscription._(() async { await stopWatchPosition(watchId); });
+    return Subscription._(() async {
+      await stopWatchPosition(watchId);
+    });
   }
 
   static Future<bool> stopWatchPosition(int watchId) async {
