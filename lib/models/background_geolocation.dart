@@ -1150,13 +1150,14 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onMotionChange(Function(Location) callback) {
+  static Subscription onMotionChange(Function(Location) callback) {
     if (_eventsMotionChange == null) {
       _eventsMotionChange = _eventChannelMotionChange
           .receiveBroadcastStream()
           .map((dynamic event) => Location(event));
     }
     _registerSubscription(_eventsMotionChange!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to location events
@@ -1184,7 +1185,7 @@ class BackgroundGeolocation {
   /// | 2     | Network error               |
   /// | 408   | Location timeout            |
   ///
-  static void onLocation(Function(Location) success,
+  static Subscription onLocation(Function(Location) success,
       [Function(LocationError)? failure]) {
     if (_eventsLocation == null) {
       _eventsLocation = _eventChannelLocation
@@ -1200,6 +1201,7 @@ class BackgroundGeolocation {
           }
         }),
         success);
+    return Subscription._(() async { removeListener(success); });
   }
 
   static void _onLocationError(LocationError error) {
@@ -1219,7 +1221,7 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onActivityChange(Function(ActivityChangeEvent) callback) {
+  static Subscription onActivityChange(Function(ActivityChangeEvent) callback) {
     if (_eventsActivityChange == null) {
       _eventsActivityChange = _eventChannelActivityChange
           .receiveBroadcastStream()
@@ -1228,6 +1230,7 @@ class BackgroundGeolocation {
       });
     }
     _registerSubscription(_eventsActivityChange!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to Geofence transition events.
@@ -1240,13 +1243,14 @@ class BackgroundGeolocation {
   ///   print('[onGeofence] ${event}');
   /// });
   /// ```
-  static void onGeofence(Function(GeofenceEvent) callback) {
+  static Subscription onGeofence(Function(GeofenceEvent) callback) {
     if (_eventsGeofence == null) {
       _eventsGeofence = _eventChannelGeofence
           .receiveBroadcastStream()
           .map((dynamic event) => GeofenceEvent(event));
     }
     _registerSubscription(_eventsGeofence!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to changes in actively monitored geofences.
@@ -1284,7 +1288,7 @@ class BackgroundGeolocation {
   ///
   /// When **all** geofences have been removed, the [GeofencesChangeEvent] will provide empty lists for both [GeofencesChangeEvent.on] & [GeofencesChangeEvent.off].
   ///
-  static void onGeofencesChange(Function(GeofencesChangeEvent) callback) {
+  static Subscription onGeofencesChange(Function(GeofencesChangeEvent) callback) {
     if (_eventsGeofencesChange == null) {
       _eventsGeofencesChange = _eventChannelGeofencesChange
           .receiveBroadcastStream()
@@ -1292,6 +1296,7 @@ class BackgroundGeolocation {
               GeofencesChangeEvent(event['on'], event['off']));
     }
     _registerSubscription(_eventsGeofencesChange!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to periodic heartbeat events.
@@ -1321,13 +1326,14 @@ class BackgroundGeolocation {
   /// })
   /// ```
   ///
-  static void onHeartbeat(Function(HeartbeatEvent) callback) {
+  static Subscription onHeartbeat(Function(HeartbeatEvent) callback) {
     if (_eventsHeartbeat == null) {
       _eventsHeartbeat = _eventChannelHeartbeat
           .receiveBroadcastStream()
           .map((dynamic event) => HeartbeatEvent(event));
     }
     _registerSubscription(_eventsHeartbeat!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to HTTP events.
@@ -1343,13 +1349,14 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onHttp(Function(HttpEvent) callback) {
+  static Subscription onHttp(Function(HttpEvent) callback) {
     if (_eventsHttp == null) {
       _eventsHttp = _eventChannelHttp
           .receiveBroadcastStream()
           .map((dynamic event) => HttpEvent(event));
     }
     _registerSubscription(_eventsHttp!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to [AppConfig.schedule] events.
@@ -1368,13 +1375,14 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onSchedule(Function(State) callback) {
+  static Subscription onSchedule(Function(State) callback) {
     if (_eventsSchedule == null) {
       _eventsSchedule = _eventChannelSchedule
           .receiveBroadcastStream()
           .map((dynamic event) => State(event));
     }
     _registerSubscription(_eventsSchedule!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to changes in device's location-services configuration / authorization.
@@ -1423,7 +1431,7 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onProviderChange(Function(ProviderChangeEvent) callback) {
+  static Subscription onProviderChange(Function(ProviderChangeEvent) callback) {
     if (_eventsProviderChange == null) {
       _eventsProviderChange = _eventChannelProviderChange
           .receiveBroadcastStream()
@@ -1432,6 +1440,7 @@ class BackgroundGeolocation {
       });
     }
     _registerSubscription(_eventsProviderChange!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to changes in network connectivity.
@@ -1445,7 +1454,7 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onConnectivityChange(Function(ConnectivityChangeEvent) callback) {
+  static Subscription onConnectivityChange(Function(ConnectivityChangeEvent) callback) {
     if (_eventsConnectivityChange == null) {
       _eventsConnectivityChange = _eventChannelConnectivityChange
           .receiveBroadcastStream()
@@ -1455,6 +1464,7 @@ class BackgroundGeolocation {
     }
     _registerSubscription(
         _eventsConnectivityChange!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to changes in plugin [State.enabled].
@@ -1469,13 +1479,14 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onEnabledChange(Function(bool) callback) {
+  static Subscription onEnabledChange(Function(bool) callback) {
     if (_eventsEnabledChange == null) {
       _eventsEnabledChange = _eventChannelEnabledChange
           .receiveBroadcastStream()
           .map((dynamic enabled) => enabled as bool);
     }
     _registerSubscription(_eventsEnabledChange!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Subscribe to state changes in OS power-saving system.
@@ -1504,13 +1515,14 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onPowerSaveChange(Function(bool) callback) {
+  static Subscription onPowerSaveChange(Function(bool) callback) {
     if (_eventsPowerSaveChange == null) {
       _eventsPowerSaveChange = _eventChannelPowerSaveChange
           .receiveBroadcastStream()
           .map((dynamic isPowerSaveMode) => isPowerSaveMode as bool);
     }
     _registerSubscription(_eventsPowerSaveChange!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Listen to [Authorization] events from [Authorization.refreshUrl].
@@ -1530,13 +1542,14 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onAuthorization(Function(AuthorizationEvent) callback) {
+  static Subscription onAuthorization(Function(AuthorizationEvent) callback) {
     if (_eventsAuthorization == null) {
       _eventsAuthorization = _eventChannelAuthorization
           .receiveBroadcastStream()
           .map((dynamic event) => AuthorizationEvent(event));
     }
     _registerSubscription(_eventsAuthorization!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// __(Android only)__ Registers a button-click listener on a [Custom Notification Layout](https://github.com/transistorsoft/flutter_background_geolocation/wiki/Android-Custom-Notification-Layout)
@@ -1570,7 +1583,7 @@ class BackgroundGeolocation {
   /// });
   /// ```
   ///
-  static void onNotificationAction(Function(String) callback) {
+  static Subscription onNotificationAction(Function(String) callback) {
     if (_eventsNotificationAction == null) {
       _eventsNotificationAction = _eventChannelNotificationAction
           .receiveBroadcastStream()
@@ -1578,6 +1591,7 @@ class BackgroundGeolocation {
     }
     _registerSubscription(
         _eventsNotificationAction!.listen(callback), callback);
+    return Subscription._(() async { removeListener(callback); });
   }
 
   /// Registers a function to receive events from __`BackgroundGeolocation`__ while in the *terminated* ("Headless") state.
@@ -1726,7 +1740,7 @@ class BackgroundGeolocation {
   static final Map<int, void Function(Location)?> _watchPositionCallbacks = {};
   static bool _isWatchPositionStreamInitialized = false;
 
-  static Future<int> watchPosition({
+  static Future<Subscription> watchPosition({
     int? timeout,
     int? interval,
     bool? persist,
@@ -1741,15 +1755,11 @@ class BackgroundGeolocation {
     if (desiredAccuracy != null) options['desiredAccuracy'] = desiredAccuracy;
     if (extras != null) options['extras'] = extras;
 
-    // Call native iOS method and await the watchId
     final int watchId =
         await _methodChannel.invokeMethod('watchPosition', options);
 
     _watchPositionCallbacks[watchId] = onLocation;
 
-    print("*** watchPositionCallbacks: $_watchPositionCallbacks");
-
-    // Ensure we start the stream only once
     if (!_isWatchPositionStreamInitialized) {
       _eventChannelWatchPosition.receiveBroadcastStream().listen((event) {
         final int id = event['streamId'];
@@ -1762,12 +1772,11 @@ class BackgroundGeolocation {
       _isWatchPositionStreamInitialized = true;
     }
 
-    return watchId;
+    return Subscription._(() async { await stopWatchPosition(watchId); });
   }
 
   static Future<bool> stopWatchPosition(int watchId) async {
     _watchPositionCallbacks.remove(watchId);
-    print("*** watchPositionCallbacks: $_watchPositionCallbacks");
     return (await _methodChannel.invokeMethod<bool>(
         'stopWatchPosition', watchId)) as FutureOr<bool>;
   }
