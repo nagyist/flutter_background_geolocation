@@ -431,6 +431,23 @@ class LocationFilter {
   /// odometer updates. Defaults to `20` when not specified.
   final double? odometerAccuracyThreshold;
 
+  /// Filtering policy applied to odometer-relevant samples, independent of [policy].
+  ///
+  /// Controls how the odometer handles anomalous GPS samples (teleports,
+  /// unrealistic speed jumps):
+  ///
+  /// - [LocationFilterPolicy.passThrough] — no filtering; every sample contributes.
+  /// - [LocationFilterPolicy.adjust] — anomalous samples are capped but still
+  ///   accumulated. *(Default)*
+  /// - [LocationFilterPolicy.conservative] — anomalous samples are **rejected
+  ///   entirely**, eliminating phantom distance from GPS teleports.
+  ///
+  /// On devices with poor GPS behaviour the default `adjust` policy can
+  /// accumulate significant phantom distance from repeatedly capped anomalies.
+  /// Use `conservative` when distance integrity matters more than capturing
+  /// every meter of movement. Defaults to `adjust` when not specified.
+  final LocationFilterPolicy? odometerPolicy;
+
   const LocationFilter({
     this.policy,
     this.useKalman,
@@ -444,6 +461,7 @@ class LocationFilter {
     this.filterDebug,
     this.odometerUseKalmanFilter,
     this.odometerAccuracyThreshold,
+    this.odometerPolicy,
   });
 
   Map<String, dynamic> toMap() => <String, dynamic>{
@@ -462,6 +480,7 @@ class LocationFilter {
           'odometerUseKalmanFilter': odometerUseKalmanFilter,
         if (odometerAccuracyThreshold != null)
           'odometerAccuracyThreshold': odometerAccuracyThreshold,
+        if (odometerPolicy != null) 'odometerPolicy': odometerPolicy!.index,
       };
 
   factory LocationFilter.fromMap(Map<String, dynamic> m) => LocationFilter(
@@ -484,5 +503,8 @@ class LocationFilter {
         odometerUseKalmanFilter: _ensureBool(m['odometerUseKalmanFilter']),
         odometerAccuracyThreshold:
             _ensureDouble(m['odometerAccuracyThreshold']),
+        odometerPolicy: (m['odometerPolicy'] != null)
+            ? LocationFilterPolicy.values[m['odometerPolicy']]
+            : null,
       );
 }
