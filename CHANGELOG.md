@@ -7,6 +7,7 @@
 * [Fixed][iOS] Declare `FlutterFramework` dependency in the plugin's `Package.swift`, required by Flutter's Swift Package Manager integration (Flutter ≥ 3.41). Silences the missing-dependency warning at build time; CocoaPods consumers are unaffected.
 * [Changed][Android] `geolocation.filter` options now apply at runtime via `setConfig` without restarting tracking (parity with iOS).
 * [Changed] Example app — migrated the iOS Runner to the UIScene lifecycle (`UIApplicationSceneManifest` + `FlutterImplicitEngineDelegate` plugin registration), ahead of Apple's upcoming requirement.
+* [Changed] Minimum Flutter SDK raised to `>=3.38.0` (aligned with `background_fetch`; required by the Swift Package Manager `FlutterFramework` integration).
 
 ## 5.2.0 &mdash; 2026-05-14
 * [Fixed][Android] `watchPosition` crashes — `Integer`→`Long` / `Integer`→`Double` ClassCastException from Flutter MethodChannel type mapping, and incorrect `Map` response shape where Dart expected an `int` watchId.
