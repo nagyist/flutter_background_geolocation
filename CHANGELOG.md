@@ -1,10 +1,12 @@
 # CHANGELOG
 
 ## 5.2.1 &mdash; 2026-06-12
+* [iOS] Pin `TSLocationManager 4.1.10` — delivers the native fixes below.
+* [Android] Pin `tslocationmanager 4.1.9` — delivers the native fixes below.
 * [Added] New config option `LocationFilter.odometerPolicy` — selects the filtering policy applied to odometer-relevant samples, independent of `LocationFilter.policy`. Defaults to `adjust` (existing behavior: anomalous samples are capped but still accumulated); use `conservative` to reject GPS teleports outright, eliminating phantom odometer distance on devices that emit corrupted location bursts.
 * [Fixed] Odometer under-counted the first `motionchange` location after exiting the stationary geofence: the Kalman filter restarted from a zero estimate, crediting only ~20% (Android) / ~1% (iOS) of the genuine exit distance (200–1000m). The filter now seeds from its first post-reset measurement, crediting the full gap distance.
 * [Fixed][iOS] `LocationFilterPolicy.conservative` rejected the first `motionchange` fix after a stationary-geofence exit as an outlier — the outlier bound was time-independent. Android parity: the bound now scales with elapsed time via the kinematic cap, so genuine post-gap fixes are accepted while teleports (`dt ≈ 0`) are still rejected.
-* [Fixed][iOS] Declare `FlutterFramework` dependency in the plugin's `Package.swift`, required by Flutter's Swift Package Manager integration (Flutter ≥ 3.41). Silences the missing-dependency warning at build time; CocoaPods consumers are unaffected.
+* [Fixed][iOS] Declare `FlutterFramework` dependency in the plugin's `Package.swift`, required by Flutter's Swift Package Manager integration (Flutter ≥ 3.38). Silences the missing-dependency warning at build time; CocoaPods consumers are unaffected.
 * [Changed][Android] `geolocation.filter` options now apply at runtime via `setConfig` without restarting tracking (parity with iOS).
 * [Changed] Example app — migrated the iOS Runner to the UIScene lifecycle (`UIApplicationSceneManifest` + `FlutterImplicitEngineDelegate` plugin registration), ahead of Apple's upcoming requirement.
 * [Changed] Minimum Flutter SDK raised to `>=3.38.0` (aligned with `background_fetch`; required by the Swift Package Manager `FlutterFramework` integration).
