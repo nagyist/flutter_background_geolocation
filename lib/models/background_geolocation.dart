@@ -3,6 +3,8 @@ part of '../flutter_background_geolocation.dart';
 const _EVENT_CHANNEL_LOCATION = "$_PLUGIN_PATH/events/" + Event.LOCATION;
 const _EVENT_CHANNEL_MOTIONCHANGE =
     "$_PLUGIN_PATH/events/" + Event.MOTIONCHANGE;
+const _EVENT_CHANNEL_LOCATIONFILTER =
+    "$_PLUGIN_PATH/events/" + Event.LOCATIONFILTER;
 const _EVENT_CHANNEL_ACTIVITYCHANGE =
     "$_PLUGIN_PATH/events/" + Event.ACTIVITYCHANGE;
 const _EVENT_CHANNEL_PROVIDERCHANGE =
@@ -109,6 +111,8 @@ class BackgroundGeolocation {
   // EventChannels
   static const EventChannel _eventChannelMotionChange =
       const EventChannel(_EVENT_CHANNEL_MOTIONCHANGE);
+  static const EventChannel _eventChannelLocationFilter =
+      const EventChannel(_EVENT_CHANNEL_LOCATIONFILTER);
   static const EventChannel _eventChannelLocation =
       const EventChannel(_EVENT_CHANNEL_LOCATION);
   static const EventChannel _eventChannelActivityChange =
@@ -144,6 +148,7 @@ class BackgroundGeolocation {
   // Stream Listeners
   static Stream<Location>? _eventsLocation;
   static Stream<Location>? _eventsMotionChange;
+  static Stream<LocationFilterEvent>? _eventsLocationFilter;
   static Stream<ActivityChangeEvent>? _eventsActivityChange;
   static Stream<ProviderChangeEvent>? _eventsProviderChange;
   static Stream<GeofencesChangeEvent>? _eventsGeofencesChange;
@@ -1157,6 +1162,32 @@ class BackgroundGeolocation {
           .map((dynamic event) => Location(event));
     }
     _registerSubscription(_eventsMotionChange!.listen(callback), callback);
+    return Subscription._(() async {
+      removeListener(callback);
+    });
+  }
+
+  /// Subscribe to locationfilter events.
+  ///
+  /// Your `callback` will be executed each time the tracking location-filter __rejects__ a location sample (eg: horizontal accuracy worse than [LocationFilterEvent.trackingAccuracyThreshold]).  Rejected locations are __not__ delivered to [onLocation], so this event is the only way to observe and adapt to them.
+  ///
+  /// ## Example
+  ///
+  /// ```dart
+  /// BackgroundGeolocation.onLocationFilter((LocationFilterEvent event) {
+  ///   print('[onLocationFilter] ${event.reason}, ${event.accuracy}, ${event.trackingAccuracyThreshold}');
+  /// });
+  /// ```
+  ///
+  static Subscription onLocationFilter(Function(LocationFilterEvent) callback) {
+    if (_eventsLocationFilter == null) {
+      _eventsLocationFilter = _eventChannelLocationFilter
+          .receiveBroadcastStream()
+          .map((dynamic event) {
+        return LocationFilterEvent(event);
+      });
+    }
+    _registerSubscription(_eventsLocationFilter!.listen(callback), callback);
     return Subscription._(() async {
       removeListener(callback);
     });

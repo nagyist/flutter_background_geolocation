@@ -73,6 +73,7 @@ static NSString *const ACTION_DESTROY_TRANSISTOR_TOKEN = @"destroyTransistorToke
     // Event Channels
     [TSLocationStreamHandler register:registrar];
     [TSMotionChangeStreamHandler register:registrar];
+    [TSLocationFilterStreamHandler register:registrar];
     [TSActivityChangeStreamHandler register:registrar];
     [TSProviderChangeStreamHandler register:registrar];
     [TSHttpStreamHandler register:registrar];

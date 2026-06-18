@@ -145,6 +145,8 @@ public class HeadlessTask implements MethodChannel.MethodCallHandler, Runnable {
             result = event.getProviderChangeEvent().toJson();
         } else if (name.equals(EventName.ACTIVITYCHANGE)) {
             result = event.getActivityChangeEvent().toJson();
+        } else if (name.equals(EventName.LOCATIONFILTER)) {
+            result = event.getLocationFilterEvent().toJson();
         } else if (name.equals(EventName.SCHEDULE)) {
             result = event.getScheduleEvent();
         } else if (name.equals(EventName.BOOT)) {

@@ -8,6 +8,7 @@ class Event {
   static const LOCATION = "location";
   static const HTTP = "http";
   static const MOTIONCHANGE = "motionchange";
+  static const LOCATIONFILTER = "locationfilter";
   static const PROVIDERCHANGE = "providerchange";
   static const HEARTBEAT = "heartbeat";
   static const ACTIVITYCHANGE = "activitychange";
