@@ -23,6 +23,7 @@ class _SettingsViewState extends State<SettingsView> {
 
   // Categorized field-lists.
   final List<Map> _geolocationSettings = [];
+  final List<Map> _locationFilterSettings = [];
   final List<Map> _activityRecognitionSettings = [];
   final List<Map> _httpSettings = [];
   final List<Map> _applicationSettings = [];
@@ -59,6 +60,12 @@ class _SettingsViewState extends State<SettingsView> {
       return item['group'] == 'geolocation';
     }).forEach((Map item) {
       _geolocationSettings.add(item);
+    });
+
+    settings.where((Map item) {
+      return item['group'] == 'location filter';
+    }).forEach((Map item) {
+      _locationFilterSettings.add(item);
     });
 
     settings.where((Map item) {
@@ -265,6 +272,8 @@ class _SettingsViewState extends State<SettingsView> {
           slivers: <Widget>[
             _buildListHeader("Geolocation"),
             _buildList(_geolocationSettings),
+            _buildListHeader("Location Filter"),
+            _buildList(_locationFilterSettings),
             _buildListHeader("Activity Recognition"),
             _buildList(_activityRecognitionSettings),
             _buildListHeader("HTTP & Persistence"),
@@ -405,7 +414,7 @@ class _SettingsViewState extends State<SettingsView> {
               alignment: Alignment.centerRight,
               child: Switch.adaptive(
                 value: boolValue,
-                onChanged: _createSwitchChangeHandler(name),
+                onChanged: _createSwitchChangeHandler(setting),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
@@ -647,16 +656,13 @@ class _SettingsViewState extends State<SettingsView> {
         break;
       default:
         return (String? value) {
-          bg.Config config = bg.Config();
           print("select value: $name: $value");
-          switch (type) {
-            case 'integer':
-              config.set(name, int.parse(value!));
-              break;
-            default:
-              config.set(name, value);
-              break;
-          }
+          dynamic parsed = (type == 'integer') ? int.parse(value!) : value;
+          // Location-filter settings apply under the nested `geolocation.filter`
+          // sub-config; every other field applies flat.
+          bg.Config config = (setting['group'] == 'location filter')
+              ? _buildConfigFor(name, parsed)
+              : (bg.Config()..set(name, parsed));
           bg.BackgroundGeolocation.setConfig(config).then((bg.State state) {
             setState(() {
               _state = state;
@@ -666,9 +672,14 @@ class _SettingsViewState extends State<SettingsView> {
     }
   }
 
-  Function(bool) _createSwitchChangeHandler(String field) {
+  Function(bool) _createSwitchChangeHandler(Map setting) {
+    final String field = setting['name'];
     return (bool value) {
-      bg.Config config = bg.Config().set(field, value);
+      // Location-filter toggles apply under the nested `geolocation.filter`
+      // sub-config; every other field applies flat.
+      bg.Config config = (setting['group'] == 'location filter')
+          ? _buildConfigFor(field, value)
+          : bg.Config().set(field, value);
       bg.BackgroundGeolocation.setConfig(config).then((bg.State state) {
         setState(() {
           _state = state;
@@ -697,6 +708,29 @@ dynamic _readConfigValue(bg.State state, String name) {
       return state.geolocation.stopTimeout;
     case 'activityType':
       return state.geolocation.activityType?.id;
+  // ---- LOCATION FILTER (geolocation.filter) ----
+    case 'policy':
+      return state.geolocation.filter?.policy?.index ?? 2;
+    case 'odometerPolicy':
+      return state.geolocation.filter?.odometerPolicy?.index ?? 1;
+    case 'useKalman':
+      return state.geolocation.filter?.useKalman ?? true;
+    case 'kalmanProfile':
+      return state.geolocation.filter?.kalmanProfile?.id ?? 0;
+    case 'maxImpliedSpeed':
+      return state.geolocation.filter?.maxImpliedSpeed ?? 60;
+    case 'maxBurstDistance':
+      return state.geolocation.filter?.maxBurstDistance ?? 300;
+    case 'burstWindow':
+      return state.geolocation.filter?.burstWindow ?? 10;
+    case 'rollingWindow':
+      return state.geolocation.filter?.rollingWindow ?? 5;
+    case 'odometerUseKalmanFilter':
+      return state.geolocation.filter?.odometerUseKalmanFilter ?? true;
+    case 'filterDebug':
+      return state.geolocation.filter?.filterDebug ?? false;
+    case 'kalmanDebug':
+      return state.geolocation.filter?.kalmanDebug ?? false;
   // ---- HTTP ----
     case 'url':
       return state.http.url;
@@ -770,6 +804,32 @@ bg.Config _buildConfigFor(String name, dynamic value) {
       return bg.Config(geolocation: bg.GeoConfig(geofenceModeHighAccuracy: value as bool));
     case 'disableLocationAuthorizationAlert':
       return bg.Config(geolocation: bg.GeoConfig(disableLocationAuthorizationAlert: value as bool));
+
+  // -------------------------
+  // LOCATION FILTER (geolocation.filter)
+  // -------------------------
+    case 'policy':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(policy: bg.LocationFilterPolicy.values[value is int ? value : int.parse('$value')])));
+    case 'odometerPolicy':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(odometerPolicy: bg.LocationFilterPolicy.values[value is int ? value : int.parse('$value')])));
+    case 'useKalman':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(useKalman: value as bool)));
+    case 'kalmanProfile':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(kalmanProfile: bg.KalmanProfile.values[value is int ? value : int.parse('$value')])));
+    case 'maxImpliedSpeed':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(maxImpliedSpeed: (value is num) ? value.toDouble() : double.parse('$value'))));
+    case 'maxBurstDistance':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(maxBurstDistance: (value is num) ? value.toDouble() : double.parse('$value'))));
+    case 'burstWindow':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(burstWindow: (value is num) ? value.toDouble() : double.parse('$value'))));
+    case 'rollingWindow':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(rollingWindow: value is int ? value : int.parse('$value'))));
+    case 'odometerUseKalmanFilter':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(odometerUseKalmanFilter: value as bool)));
+    case 'filterDebug':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(filterDebug: value as bool)));
+    case 'kalmanDebug':
+      return bg.Config(geolocation: bg.GeoConfig(filter: bg.LocationFilter(kalmanDebug: value as bool)));
 
   // -------------------------
   // ACTIVITY (leave only true activity-recognition fields here)
@@ -937,6 +997,98 @@ const PLUGIN_SETTINGS = {
     {
       'name': 'useSignificantChangesOnly',
       'group': 'geolocation',
+      'dataType': 'boolean',
+      'inputType': 'toggle',
+      'values': [true, false],
+      'defaultValue': false
+    },
+    // Location Filter
+    {
+      'name': 'policy',
+      'group': 'location filter',
+      'dataType': 'integer',
+      'inputType': 'select',
+      'labels': ['Pass-Through', 'Adjust', 'Conservative'],
+      'values': [0, 1, 2],
+      'defaultValue': 2
+    },
+    {
+      'name': 'odometerPolicy',
+      'group': 'location filter',
+      'dataType': 'integer',
+      'inputType': 'select',
+      'labels': ['Pass-Through', 'Adjust', 'Conservative'],
+      'values': [0, 1, 2],
+      'defaultValue': 1
+    },
+    {
+      'name': 'useKalman',
+      'group': 'location filter',
+      'dataType': 'boolean',
+      'inputType': 'toggle',
+      'values': [true, false],
+      'defaultValue': true
+    },
+    {
+      'name': 'kalmanProfile',
+      'group': 'location filter',
+      'dataType': 'integer',
+      'inputType': 'select',
+      'labels': ['Default', 'Aggressive', 'Conservative'],
+      'values': [0, 1, 2],
+      'defaultValue': 0
+    },
+    {
+      'name': 'maxImpliedSpeed',
+      'group': 'location filter',
+      'dataType': 'integer',
+      'inputType': 'select',
+      'values': [10, 20, 30, 50, 60, 100, 150, 200],
+      'defaultValue': 60
+    },
+    {
+      'name': 'maxBurstDistance',
+      'group': 'location filter',
+      'dataType': 'integer',
+      'inputType': 'select',
+      'values': [50, 100, 200, 300, 500, 1000, 2000],
+      'defaultValue': 300
+    },
+    {
+      'name': 'burstWindow',
+      'group': 'location filter',
+      'dataType': 'integer',
+      'inputType': 'select',
+      'values': [1, 5, 10, 20, 30, 60, 120],
+      'defaultValue': 10
+    },
+    {
+      'name': 'rollingWindow',
+      'group': 'location filter',
+      'dataType': 'integer',
+      'inputType': 'select',
+      'values': [3, 4, 5, 7, 10, 15, 20],
+      'defaultValue': 5
+    },
+    {
+      'name': 'odometerUseKalmanFilter',
+      'group': 'location filter',
+      'dataType': 'boolean',
+      'inputType': 'toggle',
+      'values': [true, false],
+      'defaultValue': true
+    },
+    {
+      'name': 'filterDebug',
+      'group': 'location filter',
+      'dataType': 'boolean',
+      'inputType': 'toggle',
+      'values': [true, false],
+      'defaultValue': false
+    },
+    {
+      'name': 'kalmanDebug',
+      'group': 'location filter',
       'dataType': 'boolean',
       'inputType': 'toggle',
       'values': [true, false],
