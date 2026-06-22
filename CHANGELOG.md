@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 5.3.0 &mdash; 2026-06-22
+* [Added] New event `onLocationFilter` — fires when the tracking location-filter **rejects** a location (eg: horizontal accuracy worse than `LocationFilter.trackingAccuracyThreshold`, or a GPS spike under the `Conservative` policy: implausible implied-speed / statistical outlier). Rejected locations are **not** delivered to `onLocation`, so this is the only way to observe and adapt to them. The event provides the rejected `location`, a normalized `reason` (`"low-accuracy"` | `"implied-speed"` | `"outlier-capped"`), `accuracy`, and `trackingAccuracyThreshold`.
+* [iOS] Pin `TSLocationManager ~> 4.2.0`
+* [Android] Pin `tslocationmanager 4.2.+`
+
 ## 5.2.1 &mdash; 2026-06-12
 * [iOS] Pin `TSLocationManager 4.1.10` — delivers the native fixes below.
 * [Android] Pin `tslocationmanager 4.1.9` — delivers the native fixes below.
