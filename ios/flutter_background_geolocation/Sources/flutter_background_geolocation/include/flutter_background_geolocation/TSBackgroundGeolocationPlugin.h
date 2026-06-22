@@ -2,6 +2,7 @@
 #import <TSLocationManager/TSLocationManager.h>
 
 #import "TSMotionChangeStreamHandler.h"
+#import "TSLocationFilterStreamHandler.h"
 #import "TSLocationStreamHandler.h"
 #import "TSActivityChangeStreamHandler.h"
 #import "TSProviderChangeStreamHandler.h"

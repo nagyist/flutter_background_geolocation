@@ -42,6 +42,7 @@ part 'models/event.dart';
 part 'models/location.dart';
 part 'models/geofence.dart';
 part 'models/activity_change_event.dart';
+part 'models/location_filter_event.dart';
 part 'models/geofence_event.dart';
 part 'models/geofences_change_event.dart';
 part 'models/heartbeat_event.dart';

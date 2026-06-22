@@ -182,6 +182,7 @@ public class BackgroundGeolocationModule  implements MethodChannel.MethodCallHan
 
         streamHandlers.add(new LocationStreamHandler().register(mContext, messenger));
         streamHandlers.add(new MotionChangeStreamHandler().register(mContext, messenger));
+        streamHandlers.add(new LocationFilterStreamHandler().register(mContext, messenger));
         streamHandlers.add(new ActivityChangeStreamHandler().register(mContext, messenger));
         streamHandlers.add(new GeofencesChangeStreamHandler().register(mContext, messenger));
         streamHandlers.add(new GeofenceStreamHandler().register(mContext, messenger));

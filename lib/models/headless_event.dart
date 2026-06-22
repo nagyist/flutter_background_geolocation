@@ -91,6 +91,7 @@ class HeadlessEvent {
   /// | [Event.MOTIONCHANGE]         | [Location]                            |
   /// | [Event.HTTP]                 | [HttpEvent]                           |
   /// | [Event.ACTIVITYCHANGE]       | [ActivityChangeEvent]                 |
+  /// | [Event.LOCATIONFILTER]       | [LocationFilterEvent]                 |
   /// | [Event.PROVIDERCHANGE]       | [ProviderChangeEvent]                 |
   /// | [Event.HEARTBEAT]            | [HeartbeatEvent]                      |
   /// | [Event.GEOFENCE]             | [GeofenceEvent]                       |
@@ -122,6 +123,9 @@ class HeadlessEvent {
         case Event.ACTIVITYCHANGE:
           event =
               new ActivityChangeEvent(params['activity'], params['confidence']);
+          break;
+        case Event.LOCATIONFILTER:
+          event = new LocationFilterEvent(params);
           break;
         case Event.GEOFENCE:
           event = new GeofenceEvent(params);
